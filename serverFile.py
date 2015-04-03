@@ -18,7 +18,7 @@ class personObject:
         self.Description = ""
 
 def interpretIncoming(data):
-    print('Got Data:' + data)
+    print('Got Data from client:' + data)
     myincoming = data.split(sep=',')
     if myincoming[0] == 'Create':
         newperson = personObject(myincoming[1])
