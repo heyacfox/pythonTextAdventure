@@ -176,6 +176,7 @@ class Client(threading.Thread):
             if data:
                 #if we find something
                 self.client.send(data)
+                print("We got: " + data.decode('UTF-8') + " from " + str(self.address))
                 #we send it back?
             else:
                 self.client.close()

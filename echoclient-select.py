@@ -19,11 +19,11 @@ sys.stdout.write('%')
 
 while 1:
     # read from keyboard
-    line = sys.stdin.readline()
+    line = input("type something").encode('UTF-8')
     if line == '\n':
         break
     s.send(line)
     data = s.recv(size)
-    sys.stdout.write(data)
+    sys.stdout.write(data.decode('UTF-8'))
     sys.stdout.write('%')
 s.close()
