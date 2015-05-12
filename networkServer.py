@@ -101,6 +101,12 @@ class Client(threading.Thread):
                     self.client.close()
                     running = 0
                     #ELSE WE JUST DIE WHY???
+            print("Haven't gotten anything in a while")
+            messagesWaiting = self.gameWorldInterface.receiveMessagesToServerToClient(str(self.address))
+            if len(messagesWaiting) > 0:
+                for m in messagesWaiting:
+                    self.client.send(m.stringMessage)
+                
                     
     def sendData(self, clientId, dataAsString):
         newMessage = message.Message(clientId, "GameWorld", dataAsString)
