@@ -18,7 +18,7 @@ class gameWorldInterface:
         #This function takes in a message and sends it to the server
 
     def sendMessageToWorld(self, newMessage):
-        self.waitingMessagesToWorld.apend(newMessage)
+        self.waitingMessagesToWorld.append(newMessage)
 
     #returns a list of messages, in time sequence order from oldest to most recent
     def receiveMessagesToWorld(self):

@@ -12,7 +12,7 @@
 #I don't know what the Id system we want to use looks like yet.
 #Whatever we choose, server has to convert it to port addresses anyway
 
-class message:
+class Message:
 
     def __init__(self, newFromUserId, newToUserId, newMessage):
         self.fromUserId = newFromUserId

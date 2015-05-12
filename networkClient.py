@@ -47,8 +47,8 @@ def inputLoop():
         line=input("What do you do?\n>> ").encode('UTF-8')
         s.send(line)
 
-mythread = receiveLoop()
-receiveLoop.start()
+#mythread = receiveLoop()
+#receiveLoop.start()
 
 
 inputLoop()
