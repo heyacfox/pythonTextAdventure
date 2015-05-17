@@ -1,4 +1,6 @@
 from random import*
+from Read import*
+
 class Char:
     def __init__(self,Game,name,sym):
         self.name=name
@@ -19,7 +21,7 @@ class Char:
             if directions[i] in Game.fix and Game.fix[directions[i]]=='|S':
                 print('There is a secret door to the', dkey[i])
             elif directions[i] in Game.world.rooms:
-                print('There is a door to the', dkey[i])
+                print('There is a door to the', dkey[i])                
         while end==0:
             end=1#
             dirc=input(self.name+': What would you like to do?\n')
@@ -44,14 +46,26 @@ class Char:
                 else:
                     print ('You have nothing')
                 end=0
-            elif dirc=='up' and directions[2] in Game.world.rooms:
-                self.pos=directions[2]
-            elif dirc=='down' and directions[3] in Game.world.rooms:
-                self.pos=directions[3]
-            elif dirc=='left' and directions[1] in Game.world.rooms:
-                self.pos=directions[1]
-            elif dirc=='right' and directions[0] in Game.world.rooms:
-                self.pos=directions[0]
+            elif dirc.split()[0] in terms['Move']:                                                          #ugh the one time I actually want to use a switch/case
+                if dirc.split()[1]==terms['Directions'][0] and directions[0] in Game.world.rooms:
+                    self.pos=directions[0]
+                elif dirc.split()[1]==terms['Directions'][1] and directions[1] in Game.world.rooms:
+                    self.pos=directions[1]
+                elif dirc.split()[1]==terms['Directions'][2] and directions[2] in Game.world.rooms:
+                    self.pos=directions[2]
+                elif dirc.split()[1]==terms['Directions'][3] and directions[3] in Game.world.rooms:
+                    self.pos=directions[3]
+                else:
+                    print("You can't do that!")
+                    end=0
+            #elif dirc=='up' and directions[2] in Game.world.rooms:
+             #   self.pos=directions[2]
+            #elif dirc=='down' and directions[3] in Game.world.rooms:
+             #   self.pos=directions[3]
+            #elif dirc=='left' and directions[1] in Game.world.rooms:
+             #   self.pos=directions[1]
+            #elif dirc=='right' and directions[0] in Game.world.rooms:
+             #   self.pos=directions[0]
             elif dirc=='wait':
                 end=1
             else:
