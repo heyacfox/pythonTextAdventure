@@ -16,6 +16,8 @@ from threading import Thread
 import select
 import time
 import msvcrt
+import string
+import selectors
 
 host = 'localhost'
 port = 50007
@@ -23,7 +25,7 @@ size = 1024
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((host,port))
 s.setblocking(0)
-sys.stdout.write('%')
+#sys.stdout.write('%')
 """
 while :1
     # read from keyboard
@@ -36,19 +38,31 @@ while :1
     sys.stdout.write('%>> ')
 s.close()
 """
+
+#https://docs.python.org/3/library/selectors.html
+#maybe that will help I don't know
+
+
 class receiveLoop(threading.Thread):
     def __init__(self):
         self.run()
 
     def run(self):
+        prompt()
         while 1:
-            ready = select.select([s], [], [], 5)
-            if ready[0]: 
-                data = s.recv(size)
-                if data:
-                    sys.stdout.write(data.decode('UTF-8'))
+            #ready = select.select([s], [], [], 5)
+            read_sockets = select.select([sys.stdin, s], [], [])
+            for sock in read_sockets[0]:
+                if sock == s:
+                    data = sock.recv(size)
+                    if not data:
+                        print("YOU BROKE IT")
+                    else:
+                        print("WE GOT DATA")
                 else:
-                    print("No data received")
+                    msg = sys.stdin.readline()
+                    s.send(msg)
+                    prompt()
             #print("We never hit ready")
             #inputLoop()
 
@@ -64,71 +78,40 @@ class inputLooping(threading.Thread):
             line=input("What do you do?\n>> ").encode('UTF-8')
             s.send(line)
 
+
+
+
+def read(conn, mask):
+    data = conn.recv(size)
+    if data:
+        print("YO")
+    else:
+        print("Um that's not a thing")
+
+def acceptInternet(sock, mask):
+    print("Just got an internet message")
+
+def acceptStdInput(sock, mask):
+    print("I just got std input")
+
+sel = selectors.DefaultSelector()
+sys.stdin.flush()
+
+sel.register(s, selectors.EVENT_READ, acceptInternet)
+sel.register(sys.stdout, selectors.EVENT_READ, acceptStdInput)
+
+while True:
+    events = sel.select()
+    for key, mask in events:
+        callback = key.data
+        
+
+#ONE LINE, CALL THE FUNCTION TO SEND MESSAGES
+def sendMessage(TextMessage):
+    s.send(TextMessage.encode('UTF-8'))
 #inputLoop()
 #inputLoop()
 #myreceivethread = receiveLoop()
 #myreceivethread.start()
 #myinputthread = inputLooping()
 #myinputthread.start()
-
-#Oh my gosh what is happening here: http://stackoverflow.com/questions/2408560/python-nonblocking-console-input
-"""
-def add_input(input_queue):
-    while True:
-        input_queue.put(sys.stdin.read(1))
-
-def myfunction():
-    input_queue = Queue.Queue()
-
-    input_thread = threading.Thread(target=add_input, args=(input_queue,))
-    input_thread.daemon = True
-    input_thread.start()
-
-    last_update = time.time()
-    while True:
-
-        if time.time()-last_update>0.5:
-            sys.stdout.write(".")
-            last_update = time.time()
-
-        if not input_queue.empty():
-            print("\ninput:" +  input_queue.get())
-            
-myfunction()
-"""
-
-#WHAT DOES THAT EVEN MEAN LION: http://code.activestate.com/recipes/531824-chat-server-client-using-selectselect/
-
-def cmdloop():
-    flag = False
-    while not flag:
-        try:
-            sys.stdout.write("Type Something")
-            sys.stdout.flush()
-
-            inputready, outputready, exceptrdy = select.select([0, s], [], [])
-
-            for i in inputready:
-                if i == 0:
-                    data = sys.stdin.readline().strip()
-                    if data:
-                        s.send(data.encode('UTF-8'))
-                elif i == s:
-                    data = s.recv(size)
-                    if not data:
-                        print("WHAT DOES THAT")
-                        flag = True
-                        break
-                    else:
-                        sys.stdout.write(data.decode('UTF-8') + '\n')
-                        sys.stdout.flush()
-        except RuntimeError:
-            print("EVEN MEAN LION")
-            s.close()
-            break
-
-cmdloop()
-
-#I don't know what this means but it sounds important: https://docs.python.org/3.4/library/selectors.html#module-selectors
-
-                    
