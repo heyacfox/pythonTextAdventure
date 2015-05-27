@@ -31,8 +31,8 @@ class gameWorldInterface:
     def receiveMessagesToServer(self):
         #Once you've confirmed there are messages to receive, calling
         #this function will return the messages meant for the server
-        tempMessages = self.waitingMessages
-        self.waitingMessages = []
+        tempMessages = self.waitingMessagesToServer
+        self.waitingMessagesToServer = []
         return tempMessages
 
     def receiveMessagesToServerToClient(self, clientId):

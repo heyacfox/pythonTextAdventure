@@ -59,8 +59,8 @@ class Application(tornado.web.Application):
             (r"/MESSAGING", someMessage),
             (r"/ComSocket", ComSocket),
             (r"/mylogin", LoginToThis),
-            (r"/pickupMessages", PickUpMessages),
-            (r"/ENDTHIS", EndLoop)
+            (r"/ENDTHIS", EndLoop),
+            (r"/PICKUP", PickUpMessages)
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -82,9 +82,11 @@ class ComSocket(tornado.websocket.WebSocketHandler):
     GameInterface = ""
     cache = []
     cache_size = 100
+    myName = ""
 
     def open(self):
         #ANYTIME SOMEONE JOINS
+        self.myName = self.request.remote_ip
         ComSocket.waiters.add(self)
         print(self.request.remote_ip)
         global GlobalGameInterface
@@ -132,8 +134,24 @@ class ComSocket(tornado.websocket.WebSocketHandler):
         if len(cls.cache) > cls.cache_size:
             cls.cache = cls.cache[-cls.cache_size:]
 
-    def pickUpMessagesFromInterface(self):
-        pass
+    @classmethod
+    def processMessagesFromInterface(cls, messageList):
+        print("Hey I'm processing")
+        for m in messageList:
+            mychat = {
+                "id": str(uuid.uuid4()),
+                "body": m.stringMessage
+                }
+            mychat["html"] = tornado.escape.to_basestring(
+                self.render_string("message.html", message=chat))
+            for w in cls.waiters:
+                if w.myName == m.toUserId:
+                    try:
+                        w.write_message(mychat)
+                    except:
+                        print("Boooo Failed")
+                    
+            
 
     def putMessageInInterfaceBox(self, tinyChat, personIP):
         print(tinyChat)
@@ -148,9 +166,12 @@ class LoginToThis():
         self.write("You hit the login page, yay!")
 
 
-class PickUpMessages():
+class PickUpMessages(tornado.web.RequestHandler):
     def get(self):
-        pass
+        print("Hey I'm picking up")
+        global GlobalGameInterface
+        myMessages = GlobalGameInterface.receiveMessagesToServer()
+        ComSocket.processMessagesFromInterface(myMessages)
         #If I got hit with this, then I was just told I need to go pick up messages
         #and distribute them, yo.
 """
