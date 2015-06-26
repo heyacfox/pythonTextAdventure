@@ -93,12 +93,14 @@ class ComSocket(tornado.websocket.WebSocketHandler):
         self.myName = self.request.remote_ip
         ComSocket.waiters.add(self)
         print(self.request.remote_ip)
+        print(self.waiters)
         global GlobalGameInterface
         self.GameInterface = GlobalGameInterface
         global ListOfUniquePeeps
         ListOfUniquePeeps[self.request.remote_ip] = self.request.remote_ip
         global GameWorld
         self.GameWorld = GameWorld
+        self.GameWorld.add_user(self.myName)
         #myGameWorldInterface.sendMessageToWorld(self.request.remote_ip, "server", "JOINED YO")
         
 
@@ -120,7 +122,32 @@ class ComSocket(tornado.websocket.WebSocketHandler):
         #ComSocket.update_cache(chat, self.request.remote_ip)
         #ComSocket.send_updates(chat, self.request.remote_ip)
         returnresult = self.send_message_to_world(chat["body"], self.request.remote_ip)
+        print(returnresult)
+
+        waiterslisty = list(self.waiters)
+
+        for m in returnresult:
+            for w in waiterslisty:
+                if m.toUserId == w.myName:
+                    newchat = {
+                        "id": str(uuid.uuid4()),
+                        "body": m.stringMessage
+                        }
+                    
+                    newchat["html"] = tornado.escape.to_basestring(
+                        self.render_string("message.html", message=newchat))
+                    self.send_updater(newchat, w)
+        
+
+        #for m in returnresult:
+        #    if m.toUserId ==
         #self.putMessageInInterfaceBox(chat["body"], self.request.remote_ip)
+
+    def send_updater(self, somechat, somewaiter):
+        try:
+            somewaiter.write_message(somechat)
+        except:
+            print("DID NOT SEND")
 
     @classmethod
     def send_updates(cls, chat, myuser):

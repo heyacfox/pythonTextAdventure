@@ -4,7 +4,7 @@ class GameWorld():
 
     def __init__(self):
         #there is no data I guess
-        self.user_list = ""
+        self.user_list = []
         self.other_things = ""
 
     #This MUST return a list of messages and the people they should go to
@@ -14,6 +14,8 @@ class GameWorld():
         for x in self.user_list:
             returningmessages.append(message.Message("world", x, str(x) + ": someone said" + messagestring))
         return returningmessages
-            
+
+    def add_user(self, user_id):
+        self.user_list.append(user_id)
             
             
