@@ -45,3 +45,21 @@ class gameWorldInterface:
                 tempMessages.append(m)
         self.waitingMessagesToServer = tempMessages
         return tempReturnMessages
+
+    def has_to_game_world_messages(self):
+        if len(self.waitingMessagesToWorld) > 0:
+            return True
+        else:
+            return False
+
+    def has_to_server_messages(self):
+        if len(self.waitingMessagesToServer) > 0:
+            return True
+        else:
+            return False
+    
+    def to_game_world_one_message(self):
+        temp_msg = self.waitingMessagesToWorld
+        msg_to_send = tempmsg[0]
+        self.waitingMessagesToWorld = self.waitingMessagesToWorld[1:]
+        return msg_to_send

@@ -18,6 +18,9 @@ ListOfUniquePeeps = {}
 global GlobalGameInterface
 GlobalGameInterface = ""
 
+global GameWorld
+GameWorld = ""
+
 class DoThat(tornado.web.RequestHandler):
     def get(self):
         self.write("THIS IS ANOTHER PAGE")
@@ -79,6 +82,7 @@ class ComSocket(tornado.websocket.WebSocketHandler):
     #ComSocket is the class for ALL THE THINGS. AGH.
     #Cache isn't a list, cache needs to be a dictionary...of lists.
     #Each user will have an individual list.
+    GameWorld = ""
     GameInterface = ""
     cache = []
     cache_size = 100
@@ -93,6 +97,8 @@ class ComSocket(tornado.websocket.WebSocketHandler):
         self.GameInterface = GlobalGameInterface
         global ListOfUniquePeeps
         ListOfUniquePeeps[self.request.remote_ip] = self.request.remote_ip
+        global GameWorld
+        self.GameWorld = GameWorld
         #myGameWorldInterface.sendMessageToWorld(self.request.remote_ip, "server", "JOINED YO")
         
 
@@ -111,9 +117,10 @@ class ComSocket(tornado.websocket.WebSocketHandler):
             self.render_string("message.html", message=chat))
         print("Some message just happened")
 
-        ComSocket.update_cache(chat, self.request.remote_ip)
-        ComSocket.send_updates(chat, self.request.remote_ip)
-        self.putMessageInInterfaceBox(chat["body"], self.request.remote_ip)
+        #ComSocket.update_cache(chat, self.request.remote_ip)
+        #ComSocket.send_updates(chat, self.request.remote_ip)
+        returnresult = self.send_message_to_world(chat["body"], self.request.remote_ip)
+        #self.putMessageInInterfaceBox(chat["body"], self.request.remote_ip)
 
     @classmethod
     def send_updates(cls, chat, myuser):
@@ -151,7 +158,10 @@ class ComSocket(tornado.websocket.WebSocketHandler):
                     except:
                         print("Boooo Failed")
                     
-            
+    def send_message_to_world(self, tinyChat, personIP):
+        myMessage = message.Message(personIP, "world", tinyChat)
+        return self.GameWorld.receive_message(myMessage)
+    
 
     def putMessageInInterfaceBox(self, tinyChat, personIP):
         print(tinyChat)
@@ -181,10 +191,12 @@ if __name__ == "__main__":
     app.listen(8888)
     tornado.ioloop.IOLoop.instance().start()
 """
-def beginServer(myGameInterface):
+def beginServer(myGameInterface, myGameWorld):
     tornado.options.parse_command_line()
     app = Application()
     app.listen(8888)
     global GlobalGameInterface
     GlobalGameInterface = myGameInterface
+    global GameWorld
+    GameWorld = myGameWorld
     tornado.ioloop.IOLoop.instance().start()
