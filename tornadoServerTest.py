@@ -83,7 +83,6 @@ class ComSocket(tornado.websocket.WebSocketHandler):
     #Cache isn't a list, cache needs to be a dictionary...of lists.
     #Each user will have an individual list.
     GameWorld = ""
-    GameInterface = ""
     cache = []
     cache_size = 100
     myName = ""
@@ -94,8 +93,6 @@ class ComSocket(tornado.websocket.WebSocketHandler):
         ComSocket.waiters.add(self)
         print(self.request.remote_ip)
         print(self.waiters)
-        global GlobalGameInterface
-        self.GameInterface = GlobalGameInterface
         global ListOfUniquePeeps
         ListOfUniquePeeps[self.request.remote_ip] = self.request.remote_ip
         global GameWorld
@@ -218,12 +215,10 @@ if __name__ == "__main__":
     app.listen(8888)
     tornado.ioloop.IOLoop.instance().start()
 """
-def beginServer(myGameInterface, myGameWorld):
+def beginServer(myGameWorld):
     tornado.options.parse_command_line()
     app = Application()
     app.listen(8888)
-    global GlobalGameInterface
-    GlobalGameInterface = myGameInterface
     global GameWorld
     GameWorld = myGameWorld
     tornado.ioloop.IOLoop.instance().start()
