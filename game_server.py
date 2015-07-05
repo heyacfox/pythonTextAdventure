@@ -86,7 +86,6 @@ class ComSocket(tornado.websocket.WebSocketHandler):
         #Then, we remove the OBJECT ComSocket from the CLASS'S waiters set
         ComSocket.waiters.remove(self)
         
-
     def on_message(self, message):
         #ANYTIME WE GET A HIT FROM SOMETHING
         #We received it as a JSON, so we decode that
@@ -107,12 +106,31 @@ class ComSocket(tornado.websocket.WebSocketHandler):
         return_list_of_messages = self.send_message_to_world(chat["body"])
 
         #Find users and pass returned messages to them
-        self.pass_messages_to_users(return_list_of_messages)
-        
+        #COMMENTING OUT WHILE TESTING ABSURDITY
+        #self.pass_messages_to_users(return_list_of_messages)
+        #AND IT RESOLVES WHYYYYYY
+        waiters_listified = list(self.waiters)
+        #for every message we received
+        for m in return_list_of_messages:
+            #then, check every waiter
+            for w in waiters_listified:
+                #if this is a message this waiter should receive
+                if m.to_user_id == w.my_name:
+                    #built the chat
+                    chat = {
+                        "id": str(uuid.uuid4()),
+                        "body": m.string_message
+                        }
+                    print(m.string_message)
+                    #send the chat
+                    print(chat)
+                    chat["html"] = tornado.escape.to_basestring(
+                        self.render_string("message.html", message=chat))
+                    #send_updater writes something to a particular user
+                    self.send_updater(chat, w)
                     
     @classmethod                
     def pass_messages_to_users(self, new_list_of_messages):
-        
         #I turn the waiters into a list because I don't know how to handle a set. I should look this up sometime
         waiters_listified = list(self.waiters)
         #for every message we received
@@ -122,15 +140,17 @@ class ComSocket(tornado.websocket.WebSocketHandler):
                 #if this is a message this waiter should receive
                 if m.to_user_id == w.my_name:
                     #built the chat
-                    send_chat = {
+                    chat = {
                         "id": str(uuid.uuid4()),
                         "body": m.string_message
                         }
+                    print(m.string_message)
                     #send the chat
-                    send_chat["html"] = tornado.escape.to_basestring(
-                        self.render_string("message.html", messages=send_chat))
+                    print(chat)
+                    chat["html"] = tornado.escape.to_basestring(
+                        self.render_string("index.html", message=chat))
                     #send_updater writes something to a particular user
-                    self.send_updater(send_chat, selected_waiter)
+                    self.send_updater(chat, selected_waiter)
 
     #this actually writes the thing in a waiters box
     def send_updater(self, selected_message, selected_waiter):
