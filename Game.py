@@ -1,6 +1,7 @@
 from random import*
 from Map import*
 from Char import*
+from Read import*
 
 class Game:
     def __init__(self):
