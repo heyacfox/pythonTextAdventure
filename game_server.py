@@ -78,13 +78,34 @@ class ComSocket(tornado.websocket.WebSocketHandler):
         global GAME_WORLD
         self.game_world = GAME_WORLD
         #When it opens, add a user to the world that is my name
-        self.game_world.add_user(self.my_name)
+        added_messages = self.game_world.add_user(self.my_name)
+        self.handle_sending_message_lists(added_messages)
 
     def on_close(self):
         #Anytime someone leaves, remove the user from the world
         self.game_world.remove_user(self.my_name)
         #Then, we remove the OBJECT ComSocket from the CLASS'S waiters set
         ComSocket.waiters.remove(self)
+
+    def handle_sending_message_lists(self, message_list):
+        waiters_listified = list(self.waiters)
+        for m in message_list:
+            #then, check every waiter
+            for w in waiters_listified:
+                #if this is a message this waiter should receive
+                if m.to_user_id == w.my_name:
+                    #built the chat
+                    chat = {
+                        "id": str(uuid.uuid4()),
+                        "body": m.string_message
+                        }
+                    print(m.string_message)
+                    #send the chat
+                    print(chat)
+                    chat["html"] = tornado.escape.to_basestring(
+                        self.render_string("message.html", message=chat))
+                    #send_updater writes something to a particular user
+                    self.send_updater(chat, w)
         
     def on_message(self, message):
         #ANYTIME WE GET A HIT FROM SOMETHING
